@@ -5,13 +5,13 @@ using namespace std;
 QString cof_a, n_counts, str, counter, point_x, cof_a2, n, nom, root;
 stringstream req_ss, res_ss; //request and response stringstream
 
+
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
 {
-    socket = new QUdpSocket(this);
-    socket->bind(QHostAddress::LocalHost, 1985);
-    connect(socket, SIGNAL(readyRead()), this, SLOT(slotReadyRead()));
+    comm = new Communicator(QHostAddress("127.0.0.1"), 1985);
+    connect(comm, &Communicator::messageRecieved, this, &MainWindow::handleMessage);
     ui->setupUi(this);
     ui->label_3->setVisible(false);
     ui->label_4->setVisible(false);
@@ -35,19 +35,9 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
-void MainWindow::slotReadyRead()
+void MainWindow::handleMessage(QString &message)
 {
-    QHostAddress sender;
-    quint16 senderPort;
-    QString response; // recieved request stringstream
-    qDebug() << "reading";
-    while (socket->hasPendingDatagrams()){
-        QByteArray datagram;
-        datagram.resize(socket->pendingDatagramSize());
-        socket->readDatagram(datagram.data(),datagram.size(),&sender,&senderPort);
-        response = QString(datagram);
-    }
-    ui->lineEdit->setText(response);
+    ui->lineEdit->setText(message);
 }
 
 void MainWindow::on_polynom_n_clicked()
@@ -230,15 +220,9 @@ void MainWindow::on_pushButton_clicked()
     if (ui->polynom_2->isChecked()) {
         req_ss << "7";
     }
+    qDebug() << QString::fromStdString(req_ss.str());
+    comm->sendToAddress(QString::fromStdString(req_ss.str()), QHostAddress("127.0.0.1"), 1984);
 
-    sendToServer(QString::fromStdString(req_ss.str()));
 
-
-}
-
-void MainWindow::sendToServer(QString str)
-{
-    qDebug() << str;
-    socket->writeDatagram(str.toUtf8(), QHostAddress::LocalHost,1984);
 }
 

@@ -3,6 +3,7 @@
 #include <QMainWindow>
 #include <QUdpSocket>
 #include <sstream>
+#include "communicator.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -18,7 +19,7 @@ public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 public slots:
-    void slotReadyRead();
+    void handleMessage(QString &message);
 
 private slots:
 
@@ -39,9 +40,8 @@ private slots:
     void on_pushButton_clicked();
 
 private:
-    void sendToServer (QString str);
+    Communicator *comm;
     Ui::MainWindow *ui;
-    QUdpSocket *socket;
     QByteArray data;
 
 };
